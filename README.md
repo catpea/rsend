@@ -6,7 +6,7 @@ This is alpha software not to be used in production.
 While it has been tested, and is in daily use, it still needs a full unit test suite,
 if you wish to volunteer please contact the author, or submit a PR.
 
-Please not that in the alpha phase you need to ssh-copy-id prior to using a host.
+Please note, that in the alpha phase you need to ssh-copy-id prior to using a host.
 
 ## Installation
 
