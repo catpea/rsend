@@ -1,7 +1,7 @@
 {
   "name": "rsend",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Upload local files to remote host via scp and ssh.",
   "main": "index.js",
   "scripts": {
