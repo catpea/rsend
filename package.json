@@ -1,0 +1,29 @@
+{
+  "name": "rsend",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Upload local files to remote host via scp and ssh.",
+  "main": "index.js",
+  "scripts": {
+    "save": "git add .; git commit -m 'New Release'; git push; npm version patch; npm publish; git push;",
+    "test": "./test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catpea/rsend.git"
+  },
+  "keywords": [],
+  "author": "catpea <corporate.miou@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/catpea/rsend/issues"
+  },
+  "homepage": "https://github.com/catpea/rsend#readme",
+  "dependencies": {
+    "debug": "^4.3.2",
+    "execa": "^5.1.1",
+    "lodash-es": "^4.17.21",
+    "path": "^0.12.7",
+    "sha256sum": "^1.0.1"
+  }
+}
