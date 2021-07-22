@@ -75,7 +75,7 @@ async function rsend(localDirectory, remoteDestination, {shasumFile, clean}={sha
 
   const transferRequired = (neededFiles.length > 0);
   if(transferRequired){
-      await exec("scp", [...neededFiles.map(i=>path.join(localDirectory,i)), localShasum, remoteDestination]);
+    await exec("scp", [...neededFiles.map(i=>path.join(localDirectory,i)), localShasum, remoteDestination]);
   }
 
   return true;
