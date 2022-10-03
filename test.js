@@ -45,35 +45,35 @@ import rsend from './index.js';
 
 
 
-{
-const expected = {
-  create: [ 'new-dir/created.txt' ],
-  update: [ 'changed.txt' ],
-  remove: [ 'deleted.txt' ],
-  normal: [ 'same.txt' ],
-}
-;
-const actual = await rsend('test/new-version', 'test/server-version', 'test/old-version/SHA256SUM', {
-  silent: true,
-      remove: {
-        disable: true,
-        order: ['tar', 'zip', 'mp3', 'png', 'jpg', 'SHA256SUM'],
-        template:({name, destination})=>`xrm "${destination}/${name}"`,
-        filter: null
-      },
-      create: {
-        order: ['tar', 'zip', 'mp4', 'mp3', 'png', 'jpg', 'txt', 'html', 'SHA256SUM'],
-        template:({name, source, destination})=>`xput "${source}/${name}" "${destination}/${name}"`,
-        filter: null //file=>path.extname(file)==='.html'
-      },
-      update: {
-        order: ['tar', 'zip', 'mp4', 'mp3', 'png', 'jpg', 'txt', 'html', 'SHA256SUM'],
-        template:({name, source, destination})=>`xput "${source}/${name}" "${destination}/${name}"`,
-        filter: null //file=>path.extname(file)==='.html'
-      },
-});
-deepEqual(actual, expected);
-}
+// {
+// const expected = {
+//   create: [ 'new-dir/created.txt' ],
+//   update: [ 'changed.txt' ],
+//   remove: [ 'deleted.txt' ],
+//   normal: [ 'same.txt' ],
+// }
+// ;
+// const actual = await rsend('test/new-version', 'test/server-version', 'test/old-version/SHA256SUM', {
+//   silent: true,
+//       remove: {
+//         disable: true,
+//         order: ['tar', 'zip', 'mp3', 'png', 'jpg', 'SHA256SUM'],
+//         template:({name, destination})=>`xrm "${destination}/${name}"`,
+//         filter: null
+//       },
+//       create: {
+//         order: ['tar', 'zip', 'mp4', 'mp3', 'png', 'jpg', 'txt', 'html', 'SHA256SUM'],
+//         template:({name, source, destination})=>`xput "${source}/${name}" "${destination}/${name}"`,
+//         filter: null //file=>path.extname(file)==='.html'
+//       },
+//       update: {
+//         order: ['tar', 'zip', 'mp4', 'mp3', 'png', 'jpg', 'txt', 'html', 'SHA256SUM'],
+//         template:({name, source, destination})=>`xput "${source}/${name}" "${destination}/${name}"`,
+//         filter: null //file=>path.extname(file)==='.html'
+//       },
+// });
+// deepEqual(actual, expected);
+// }
 
 
 /*
