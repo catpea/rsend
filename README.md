@@ -1,85 +1,37 @@
-# rsend
-Upload local files to remote host via scp and ssh.
+# rsend 2.0
 
-This is alpha software not to be used in production.
+Uploading is hard, it is the reason why all the crappy programs exist,
+rsend aims to respectfully solve this problem.
 
-While it has been tested, and is in daily use, it still needs a full unit test suite,
-if you wish to volunteer please contact the author, or submit a PR.
+It will work with existing SHA256SUM,
+and in the future with other ways to discover changes.
 
-Please note, that in the alpha phase you need to ssh-copy-id prior to using a host.
+The correct way to upload the right files,
+is to write all your software correctly.
 
-## Installation
+Rsend is for the people,
+who didn't do it right.
 
-```shell
-npm i rsend
-```
+## Theory Of Operation
 
-## Usage
+Figure out what files have changed and,
+and give the user an object with three arrays: create, update, remove.
 
-```JavaScript
-import rsend from 'rsend';
-```
-
-## Example
+This is the solver, there is nothing to it:
 
 ```JavaScript
-import rsend from 'rsend';
 
-
-// where test is a directory.
-await rsend('test', 'earth:/tmp/test');
-
-```
-
-## Testing
-
-### First Run
-
-```shell
-
-env DEBUG=upload npm run test
-
-
-> rsend@1.0.2 test
-> ./test.js
-
-  upload Local shasum: test/SHA256SUM +0ms
-  upload Executing: ssh "earth" "test -d /tmp/rsend-test || echo fail"; +1ms
-  upload Directory /tmp/rsend-test is missing creating a blank one. +546ms
-  upload Executing: ssh "earth" "mkdir -p /tmp/rsend-test"; +1ms
-  upload Executing: ssh "earth" "test -f /tmp/rsend-test/SHA256SUM || echo fail"; +304ms
-  upload Checksum file missing in /tmp/rsend-test creating a new blank one. +330ms
-  upload Executing: ssh "earth" "sha256sum /tmp/rsend-test/*.* || echo "" > /tmp/rsend-test/SHA256SUM"; +0ms
-  upload Executing: ssh "earth" "cat /tmp/rsend-test/SHA256SUM"; +288ms
-  upload Number of files in current list: 1 +233ms
-  upload Files shared between previous list and current list: 0 +1ms
-  upload Number of files needing to be uploaded: 1 +0ms
-  upload Executing: ssh "earth" "ls -1 /tmp/rsend-test/*.* || echo"; +0ms
-  upload Skipping 0 files. +236ms
-  upload Copyinig 1 new files and checksum to remote device. +0ms
-  upload Executing: scp "test/a.txt" "test/SHA256SUM" "earth:/tmp/rsend-test"; +0ms
+function solver(current, previous){
+  const [currentNames, previousNames] = [current, previous].map(list=>list.map(i=>i[1]));
+  const [currentHash, previousHash] = [current, previous].map(list=>list.map(i=>i.join('  ')))
+  const normal = intersection(currentHash, previousHash).map(i=>i.split('  ')[1])
+  const create = difference(currentNames, previousNames);
+  const update = difference(intersection(previousNames, currentNames), normal);
+  const remove = difference(previousNames, currentNames);
+  return { create, update, remove, normal };
+}
 
 ```
 
-### Second Run
+It returns an object with an array of changes.
 
-```shell
-
-env DEBUG=upload npm run test
-
-
-> rsend@1.0.2 test
-> ./test.js
-
-  upload Local shasum: test/SHA256SUM +0ms
-  upload Executing: ssh "earth" "test -d /tmp/rsend-test || echo fail"; +0ms
-  upload Executing: ssh "earth" "test -f /tmp/rsend-test/SHA256SUM || echo fail"; +465ms
-  upload Executing: ssh "earth" "cat /tmp/rsend-test/SHA256SUM"; +225ms
-  upload Number of files in current list: 1 +237ms
-  upload Files shared between previous list and current list: 1 +2ms
-  upload Number of files needing to be uploaded: 0 +0ms
-  upload Executing: ssh "earth" "ls -1 /tmp/rsend-test/*.* || echo"; +0ms
-  upload Skipping 1 file. +287ms
-  upload Copyinig 0 new file and checksum to remote device. +1ms
-
-```
