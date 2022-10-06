@@ -1,0 +1,1444 @@
+import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}import path from 'path';
+import crypto from 'crypto';
+import {pad} from 'lodash-es';
+import fs from 'fs/promises';
+
+export default main;
+
+async function main({
+  directory, // base dir
+  file, // name of checksum file
+  pattern,
+  checksums,
+  algorithm = 'sha256' // mts, crc32, sha256,...
+  }) {
+
+  const location = path.join(directory, file);
+
+  let after = 0;
+  try {
+    const stats = await fs.stat(location);
+    after = stats.mtimeMs;
+  }catch{}
+
+  // console.log( await scanner({ directory, after }) );
+
+  console.log( await update(directory, algorithm, after) );
+
+  // all files are required,
+  // but checksum only what has changed.
+
+  // if (checksums.length) {
+  //   return await verify(pattern, checksums, algorithm);
+  // } else {
+  // }
+
+}
+
+// async function verify(directory, previous, algorithm) {
+//   const current = Object.fromEntries((await create(pattern, algorithm)).map(([a, b]) => [b, a]));
+//   return previous.map(([sum, file]) => ([[file, sum == current[file] ? true : false]])).flat(1)
+// }
+
+async function update(directory, algorithm, after) {
+  return await Promise.all(
+    (await scanner({directory, after}))
+      // .map(item => path.join(item.directory, item.file.name))
+      .map(o=>{ console.log('>>>', o); return o})
+      .map(async ({ directory, file }) => [ ...await checksum({directory, file, algorithm}) ]));
+}
+
+// async function create(directory, algorithm, after) {
+//   return await Promise.all((await files(pattern, after)).map(async item => [await checksum(item, algorithm), item]));
+// }
+
+function checksum({directory, file, algorithm}) {
+  const location = path.join(directory, file.name);
+  if (algorithm == 'mts') return [ascii2hex(pad(file.mtimeMs, 20) + '|' + pad(file.size, 16)), location];
+  return new Promise(function (resolve, reject) {
+    const hash = crypto.createHash(algorithm);
+    const input = fs.createReadStream(location);
+    input.on('readable', () => {
+      const data = input.read();
+      if (data) {
+        hash.update(data);
+      } else {
+        resolve([hash.digest('hex'), location])
+      }
+    });
+  })
+
+
+}
+
+// async function files(pattern, after) {
+//   //  const stats = await stat(location, { bigint: true });
+
+//   // const initial = await new Promise(function (resolve, reject) { glob(pattern, {}, function (err, files) { if (err) return reject(err); resolve(files); });})
+  
+
+
+// }
+
+function ascii2hex(str){
+
+  return str
+    .split('')
+    .map(l => l.charCodeAt(0))
+    .map(v => v.toString(16))
+    .join('');
+
+}
+
+
+ 
+
+async function scanner({directory, list, after}) {
+  let files = await Promise.all( (await fs.readdir(directory)) .map(async name=>(Object.assign(await fs.stat(path.join(directory, name)), {name}) ) ));
+  
+  console.log(files);
+  list = list || [];
+ 
+  for (const file of files) {
+    if(file.isDirectory()){
+      list = await scanner({directory: path.join(directory, file.name), list, after});
+    }else{
+      //if (file.mtimeMs >= after) 
+      list.push( {directory, file});
+    }
+  }
+
+  return list;
+}

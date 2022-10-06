@@ -1,0 +1,48 @@
+{
+ "meta": {
+  "directory": "/home/meow/Universe/Development/npm/rsend/test/v2/src",
+  "file": ".checksums.json",
+  "fingerprint": {
+   "mtime": true,
+   "size": true,
+   "hash": "sha256"
+  }
+ },
+ "data": {
+  ".checksums.json": {
+   "mtime": "2022-10-06T00:38:36.913Z",
+   "size": 1298,
+   "hash": "ef42a77350c2cde8320f2c330f708e85b61e281309e48cd018152f5ffa270985"
+  },
+  "SMARTSUM": {
+   "mtime": "2022-10-04T23:15:09.784Z",
+   "size": 295,
+   "hash": "c5f5d3643cead892b994f14b252e82581ee769397dc37e2cab8e0fd470ce196f"
+  },
+  "a/a.txt": {
+   "mtime": "2022-10-04T22:52:45.973Z",
+   "size": 1,
+   "hash": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+  },
+  "a/b/c/x.txt": {
+   "mtime": "2022-10-05T23:25:59.963Z",
+   "size": 5,
+   "hash": "5feced64fd428937c333324a97280abe5526d0060c678aafdac087acbeb33fe4"
+  },
+  "b.txt": {
+   "mtime": "2022-10-04T22:57:45.878Z",
+   "size": 39273,
+   "hash": "4341d8a2b49b10714decea01b55a878c6a4795a27dffb1c6b4fbb666a24c7112"
+  },
+  "c.txt": {
+   "mtime": "2022-10-04T22:41:39.574Z",
+   "size": 3,
+   "hash": "64daa44ad493ff28a96effab6e77f1732a3d97d83241581b37dbd70a7a4900fe"
+  },
+  "sub/sub-a.txt": {
+   "mtime": "2022-10-04T22:41:53.012Z",
+   "size": 4,
+   "hash": "0eea63e75f484aa4a623c184c4e00f8884b62b1e71636f1318150d77aa64dd25"
+  }
+ }
+}
