@@ -16,7 +16,7 @@ who didn't do it right.
 
 ```JavaScript
 
-const str = await rsend(
+const solution = await rsend(
   {
     kind: 'sftp',
     fingerprint: { mtime:true, size:true, hash:'sha256' },
@@ -51,7 +51,7 @@ const str = await rsend(
 
 ```
 
-```str.script``` will contain the command you have to run:
+```solution.script``` will contain the command you have to run:
 
 ```shell
 
