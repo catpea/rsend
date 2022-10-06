@@ -10,7 +10,7 @@ export default function(options){
 
       create: {
         order: ['tar', 'zip', 'mp4', 'mp3', 'png', 'jpg', 'txt', 'html', 'SHA256SUM'],
-        initialize: ({ destination, directories }) => directories.map(directory => `mkdir "${destination}/${directory}"`).join('\n'),
+        initialize: ({ destination, name }) => `mkdir "${destination}/${name}"`,
         execute: ({ name, source, destination }) => `put "${source}/${name}" "${destination}/${name}"`,
         // filter: file=>path.extname(file)==='.html'
       },

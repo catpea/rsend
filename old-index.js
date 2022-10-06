@@ -5,8 +5,8 @@ import sha256sum from 'sha256sum';
 const log = bug('rsend');
 import { existsSync } from 'fs';
 import readRemote from './read-remote.js';
-import sftpBatchfile from './kinds/sftp-batchfile.js';
-import lftpBatchfile from './kinds/lftp-batchfile.js';
+import sftpBatchfile from './kinds/sftp.js';
+import lftpBatchfile from './kinds/lftp.js';
 import { readFile, writeFile } from 'fs/promises';
 import { difference, intersection, merge } from 'lodash-es';
 
@@ -19,8 +19,8 @@ async function rsend(options, { debug = false } = {}) {
   if (debug) bug.enable('rsend');
 
   const kinds = {
-    'sftp-batchfile': sftpBatchfile,
-    'lftp-batchfile': lftpBatchfile,
+    'sftp': sftpBatchfile,
+    'lftp': lftpBatchfile,
   };
   const { silent, src, dest, header, create, update, remove } = merge({}, kinds[options.kind](), options,);
   const current = await local(src.dir, src.sum);

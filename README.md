@@ -108,15 +108,8 @@ The focus is always on the local files and the local copy of .checksum.json.
 
 ## rsend does not actually transfer files
 
-It would be an insult for me to select a mode of transfer for you,
+
 rsend creates the lftp/sftp or even send.sh/send.bat files.
-
-Personally, I am interested in creating .tar files (similar to .zip),
-and uploading those to the remote destination, and then unpacking them there via a shell command.
-
-This is simple, because I can just create a doit.sh that not only will contain the tar and upload instructions,
-but also a way to login to the remote server, and un-tar that file.
-
 rsend follows the "do one thing do it well" philosophy.
 
 

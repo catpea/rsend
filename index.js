@@ -1,6 +1,7 @@
 import path, { sep } from 'path';
 import chalk from 'chalk';
 import bug from 'debug';
+import util from 'util';
 import lo from 'lodash';
 import smartsum from './smartsum.js';
 
@@ -13,9 +14,19 @@ import { stat, readFile, writeFile } from 'fs/promises';
 import {
   differenceBy, intersectionBy,
   difference, intersection,
- merge} from 'lodash-es';
+ merge,
+ map} from 'lodash-es';
 import { equal, deepEqual } from 'assert';
 export default rsend;
+
+console.x = function(x){
+  
+  const showHidden = false;
+  const depth = 8;
+  const colorize = true;
+  console.info(util.inspect( x, showHidden, depth, colorize));
+  
+}
 
 //localDirectory, remoteDirectory, remoteSum,
 async function rsend(options, {debug=false}={}){
@@ -26,8 +37,8 @@ async function rsend(options, {debug=false}={}){
   const { silent, fingerprint, separator, guarantee, src, dest, header, create, update, remove } = merge({}, kinds[options.kind](), options, );
   
   const current = await smartsum.ensure({ directory: src.dir, file: src.sum, fingerprint });
-
-  const previous = JSON.parse((await readRemote(dest.sum)))||{meta:{},data:{}};
+  const previous = { meta: {}, data: {} }; try { Object.assign(previous, JSON.parse((await readRemote(dest.sum))) ) } catch{}
+  
 
   log(`${path.join(src.dir, src.sum)} vs. ${dest.sum}`);
   log(`Number of current files in SHASUM: ${current.data.length}, number of previous files: ${previous.length}`);
@@ -38,30 +49,85 @@ async function rsend(options, {debug=false}={}){
   log(`update ${solution.update.length} existing file(s) (${chalk.green(exts(solution.update).join(','))}).`);
   log(`create ${solution.create.length} new file(s) (${chalk.green(exts(solution.create).join(','))}).`);
 
+  // console.log(solution);
+
   let script = [];
-  const L = (x)=>{ console.log(x); return x};
+  const L = (x)=>{ console.x(x); return x};
   const exist = Object.fromEntries(solution.normal.map(o=> path.dirname(o) ).map(o=>[o,o]));
-  if (solution.create.length && !create.disable) script = script.concat(sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true).map(o => path.dirname(o)).filter(i => i !== '.').filter(i => !exist[i]).map(o => [create.initialize({ destination: dest.dir, directory: o, directories: cascade(o, exist, separator) }), o]).map(([a, o]) => { [exist[o] = o]; return a }))
-  if (solution.create.length && !create.disable) script = script.concat(sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true).map(o => create.execute({ name: path.basename(o), source: path.join(src.dir, path.dirname(o)), destination: path.join(dest.dir, path.dirname(o)) })))
+  
+  const tree = {};
+  const dig = (path, data = tree) => lo.get(data, lo.initial(path.replace(/^\//, '').replace(/\/$/, '').split(separator).map(o => [o, 'elements']).flat()))
+   
+  
+  if (solution.create.length && !create.disable){
+    
+    const filtered = sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true);
+ 
+    // console.log(filtered);
+
+    const targets = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
+    targets.map(o => o.map(o => [o, 'elements']).flat()).map(o => lo.set(tree, o.map(o => o), {}))
+    targets.map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), directory: true, created: false }))
+    filtered.map(o => o.split('/')).map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), file: true }))
+
+    // console.x(tree);
+    // console.x(dig('/my-documents/3d-stuff/blender/'))
+    // console.log(lo.initial('my-documents/3d-stuff/blender/old-version.blend'.split(separator).map(o => [o, 'elements']).flat()));
+
+    
+    const directories = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
+    .map(o=>o.join('/'))
+
+    // .map(path=>[path, dig(path).created].join(':'))
+    // .map(L)
+
+    
+    // runs for all files.
+    // console.log(directories);
+    const initialization = directories.map(o => create.initialize({ destination: path.join(dest.dir, path.dirname(o)), name: path.basename(o) }))
+    // console.log(initialization);
+    
+    
+    const transport = filtered.map(o => create.execute({ name: path.basename(o), source: path.join(src.dir, path.dirname(o)), destination: path.join(dest.dir, path.dirname(o)) }))
+    
+    script = script.concat(initialization);
+    script = script.concat(transport);
+    
+    // process.exit()
+  }
+
+  // if (solution.create.length && !create.disable) script = script.concat(sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true))
   if (solution.update.length && !update.disable) script = script.concat(sorted(solution.update, update.order).filter(i => update.filter ? update.filter(i) : true).map(o => update.execute({ name: path.basename(o), source: path.join(src.dir, path.dirname(o)), destination: path.join(dest.dir, path.dirname(o)) })))
   if (solution.remove.length && !remove.disable) script = script.concat(sorted(solution.remove, remove.order).filter(i => remove.filter ? remove.filter(i) : true).map(o => remove.execute({ name: path.basename(o), destination: path.join(dest.dir, path.dirname(o)) })))
   if (script.length) script.unshift(...header);
-  solution.script = script.join('\n');
+  solution.script = script.filter(i=>i).join('\n');
   return solution;
 }
 
- 
 function cascade(dir, exist, separator='/'){
-  const fragments = dir.split(separator);
-  const response = [];
+const fragments = dir.split(separator);
+const response = [];
   for (let a = fragments.length-1; a > -1; a--) {
-    const A = fragments[a];
     response[a] = [];
     for (let b = a; b < fragments.length; b++) {
-        response[b][a] = A
+      response[b][a] = fragments[a];
     }
   }
-  return response.map(a => a.join('/')).filter(i => !exist[i])
+  
+  const newones = response.map(a => a.join('/')).filter(i => !exist[i]).map((o)=>exist[o] = o)
+
+  return newones;
+ }
+ 
+function cascade2(fragments){
+  const response = [];
+  for (let a = fragments.length-1; a > -1; a--) {
+    response[a] = [];
+    for (let b = a; b < fragments.length; b++) {
+      response[b][a] = fragments[a];
+    }
+  }
+  return response;
  }
 
 function solver(current, previous, guarantee = ['name', 'size', 'mdate', 'hash']) {
@@ -88,21 +154,27 @@ function normalizer(string){
   .filter(([hash, name])=>!name.endsWith('~'))
 }
 
-function sorted(list, spec=[]){
+function sorted(input, spec=[]){
+  const list = lo.clone(input);
+
   let response = [];
   const db = {};
+
   for (let index = 0; index < list.length; index++) {
     for(const ext of spec){
     if(!db[ext]) db[ext] = [];
-      if(list[index].endsWith(ext)){
+      if (list[index] && list[index].endsWith(ext)){
         db[ext].push(list[index]);
+        list[index] = undefined;
       }
     }
   }
+
   for(const ext of spec){
     response = response.concat(db[ext])
   }
-  return response;
+
+  return response.concat(list.filter(i=>i));
 }
 
 function exts(list){

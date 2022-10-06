@@ -8,7 +8,7 @@ import rsend from './index.js';
 
 const expected = {
   "create": [
-    ".checksums.json",
+    "checksums.json",
     "SMARTSUM",
     "a.txt",
     "c.txt",
@@ -35,13 +35,11 @@ const actual = await rsend(
     kind: 'sftp',
     fingerprint: { mtime:true, size:true, hash:'sha256' },
     guarantee: [ 'hash' ],
-    
-    
-    mkdir: { enabled: true, parents:true},
+  
     separator: '/',
     silent: false,
     src: {
-      sum: '.checksums.json',
+      sum: 'checksums.json',
       dir: path.resolve('./test/v2/src')
     },
     dest: {
@@ -62,9 +60,5 @@ const actual = await rsend(
     }
   }
 );
-
-
-// console.log('###########################');
-// console.log(JSON.stringify(actual, null, '  '));
-
+ 
 console.log(actual.script);

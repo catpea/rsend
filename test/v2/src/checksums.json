@@ -1,0 +1,78 @@
+{
+ "meta": {
+  "directory": "/home/meow/Universe/Development/npm/rsend/test/v2/src",
+  "file": ".checksums.json",
+  "fingerprint": {
+   "mtime": true,
+   "size": true,
+   "hash": "sha256"
+  }
+ },
+ "data": {
+  ".checksums.json": {
+   "mtime": "2022-10-06T21:55:28.012Z",
+   "size": 2357,
+   "hash": "2f62bc0aab67eac3375c2590c0d17695792576d67ac66f809d9b86a33a40d273"
+  },
+  "SMARTSUM": {
+   "mtime": "2022-10-04T23:15:09.784Z",
+   "size": 295,
+   "hash": "c5f5d3643cead892b994f14b252e82581ee769397dc37e2cab8e0fd470ce196f"
+  },
+  "a/a.txt": {
+   "mtime": "2022-10-04T22:52:45.973Z",
+   "size": 1,
+   "hash": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+  },
+  "a/b/c/x.txt": {
+   "mtime": "2022-10-05T23:25:59.963Z",
+   "size": 5,
+   "hash": "5feced64fd428937c333324a97280abe5526d0060c678aafdac087acbeb33fe4"
+  },
+  "b.txt": {
+   "mtime": "2022-10-04T22:57:45.878Z",
+   "size": 39273,
+   "hash": "4341d8a2b49b10714decea01b55a878c6a4795a27dffb1c6b4fbb666a24c7112"
+  },
+  "c.txt": {
+   "mtime": "2022-10-04T22:41:39.574Z",
+   "size": 3,
+   "hash": "64daa44ad493ff28a96effab6e77f1732a3d97d83241581b37dbd70a7a4900fe"
+  },
+  "games/dott/dott-ega.exe": {
+   "mtime": "2022-10-06T18:01:56.209Z",
+   "size": 0,
+   "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "games/rott/manual/index.html": {
+   "mtime": "2022-10-06T19:18:36.916Z",
+   "size": 0,
+   "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "games/rott/play.exe": {
+   "mtime": "2022-10-06T18:01:15.203Z",
+   "size": 0,
+   "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "my-documents/3d-stuff/blender/bork.blend": {
+   "mtime": "2022-10-06T17:59:08.751Z",
+   "size": 6,
+   "hash": "528660877355408985fedd9ea2cf6b289960a850d9f277070376d333363da57c"
+  },
+  "my-documents/3d-stuff/blender/old-version.blend": {
+   "mtime": "2022-10-06T18:14:46.487Z",
+   "size": 0,
+   "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "my-documents/music/some-file.mp3": {
+   "mtime": "2022-10-06T17:59:42.587Z",
+   "size": 0,
+   "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sub/sub-a.txt": {
+   "mtime": "2022-10-04T22:41:53.012Z",
+   "size": 4,
+   "hash": "0eea63e75f484aa4a623c184c4e00f8884b62b1e71636f1318150d77aa64dd25"
+  }
+ }
+}
