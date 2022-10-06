@@ -51,7 +51,7 @@ const solution = await rsend(
 
 ```
 
-```solution.script``` will contain the command you have to run:
+```solution.script``` will contain the commands you have to run:
 
 ```shell
 
