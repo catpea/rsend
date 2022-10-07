@@ -55,50 +55,49 @@ async function rsend(options, {debug=false}={}){
   const L = (x)=>{ console.x(x); return x};
   const exist = Object.fromEntries(solution.normal.map(o=> path.dirname(o) ).map(o=>[o,o]));
   
-  const tree = {};
-  const dig = (path, data = tree) => lo.get(data, lo.initial(path.replace(/^\//, '').replace(/\/$/, '').split(separator).map(o => [o, 'elements']).flat()))
-   
+
   
   if (solution.create.length && !create.disable){
     
     const filtered = sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true);
- 
-    // console.log(filtered);
 
-    const targets = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
-    targets.map(o => o.map(o => [o, 'elements']).flat()).map(o => lo.set(tree, o.map(o => o), {}))
-    targets.map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), directory: true, created: false }))
-    filtered.map(o => o.split('/')).map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), file: true }))
+    // const targets = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
+    // targets.map(o => o.map(o => [o, 'elements']).flat()).map(o => lo.set(tree, o.map(o => o), {}))
+    // targets.map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), directory: true, created: false }))
+    // filtered.map(o => o.split('/')).map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), file: true }))
 
-    // console.x(tree);
-    // console.x(dig('/my-documents/3d-stuff/blender/'))
-    // console.log(lo.initial('my-documents/3d-stuff/blender/old-version.blend'.split(separator).map(o => [o, 'elements']).flat()));
-
-    
-    const directories = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
-    .map(o=>o.join('/'))
-
-    // .map(path=>[path, dig(path).created].join(':'))
-    // .map(L)
-
-    
-    // runs for all files.
-    // console.log(directories);
-    const initialization = directories.map(o => create.initialize({ destination: path.join(dest.dir, path.dirname(o)), name: path.basename(o) }))
-    // console.log(initialization);
-    
-    
+    const directories = lo.uniqBy(filtered.map(o => path.dirname(o)) .filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join()).map(o=>o.join('/'))
+    const existingDirectories = lo.uniqBy(solution.update.map(o => path.dirname(o)) .filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join()).map(o=>o.join('/'))
+    const initialization = difference(directories, existingDirectories).map(o => create.initialize({ destination: path.join(dest.dir, path.dirname(o)), name: path.basename(o) }))
     const transport = filtered.map(o => create.execute({ name: path.basename(o), source: path.join(src.dir, path.dirname(o)), destination: path.join(dest.dir, path.dirname(o)) }))
-    
     script = script.concat(initialization);
     script = script.concat(transport);
-    
-    // process.exit()
+
   }
 
-  // if (solution.create.length && !create.disable) script = script.concat(sorted(solution.create, create.order).filter(i => create.filter ? create.filter(i) : true))
   if (solution.update.length && !update.disable) script = script.concat(sorted(solution.update, update.order).filter(i => update.filter ? update.filter(i) : true).map(o => update.execute({ name: path.basename(o), source: path.join(src.dir, path.dirname(o)), destination: path.join(dest.dir, path.dirname(o)) })))
-  if (solution.remove.length && !remove.disable) script = script.concat(sorted(solution.remove, remove.order).filter(i => remove.filter ? remove.filter(i) : true).map(o => remove.execute({ name: path.basename(o), destination: path.join(dest.dir, path.dirname(o)) })))
+  
+  if (solution.remove.length && !remove.disable){
+  
+    const filtered = sorted(solution.remove, remove.order).filter(i => remove.filter ? remove.filter(i) : true)
+
+    // const tree = {};
+    // const ls = (path, data = tree) => lo.get(data, lo.initial(path.replace(/^\//, '').replace(/\/$/, '').split(separator).map(o => [o, 'elements']).flat()))
+    // const targets = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')).map(o => cascade2(o)).flat(1), o => o.join())
+    // targets.map(o => o.map(o => [o, 'elements']).flat()).map(o => lo.set(tree, o.map(o => o), {}))
+    // targets.map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), directory: true, created: false }))
+    // filtered.map(o => o.split('/')).map(o => lo.initial(o.map(o => [o, 'elements']).flat())).map(o => lo.set(tree, o.map(o => o), { name: lo.nth(o, -1), file: true }))
+    
+    const existing = lo.uniqBy(solution.update.concat(solution.create) .map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')), o => o.join()).map(o => o.join('/'))
+    const altered = lo.uniqBy(filtered.map(o => path.dirname(o)).filter(o => o !== '.').map(o => o.split('/')),  o => o.join()).map(o => o.join('/'))
+    const emptied = difference(altered, existing);
+    const removal = filtered.map(o => remove.execute({ name: path.basename(o), destination: path.join(dest.dir, path.dirname(o)) }))
+    const clean = emptied.map(o => remove.clean({ name: path.basename(o), destination: path.join(dest.dir, path.dirname(o)) }))
+    script = script.concat(removal)
+    script = script.concat(clean)
+
+  }
+  
   if (script.length) script.unshift(...header);
   solution.script = script.filter(i=>i).join('\n');
   return solution;
@@ -190,4 +189,3 @@ function exts(list){
   return Object.entries(db).map(([k,v])=>`${k}=${v}`)
 
 }
- 

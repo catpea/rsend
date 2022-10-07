@@ -1,5 +1,11 @@
 # rsend 2.0
 
+## Alpha Software
+
+Help me test it.
+
+## Introduction
+
 Uploading is hard, it is the reason why all the crappy programs exist,
 rsend aims to respectfully solve this problem.
 

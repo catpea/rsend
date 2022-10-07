@@ -1,7 +1,7 @@
 {
  "meta": {
   "directory": "/home/meow/Universe/Development/npm/rsend/test/v2/src",
-  "file": ".checksums.json",
+  "file": "checksums.json",
   "fingerprint": {
    "mtime": true,
    "size": true,
@@ -9,6 +9,11 @@
   }
  },
  "data": {
+  "dbye/bye/not-yet.txt": {
+   "mtime": "2022-10-06T21:55:28.012Z",
+   "size": 2357,
+   "hash": "2f62bc0aab67eac3375c2590c0d17695792576d67ac66f809d9b86a33a40d273"
+  },
   ".checksums.json": {
    "mtime": "2022-10-06T21:55:28.012Z",
    "size": 2357,
@@ -35,7 +40,7 @@
    "hash": "4341d8a2b49b10714decea01b55a878c6a4795a27dffb1c6b4fbb666a24c7112"
   },
   "c.txt": {
-   "mtime": "2022-10-04T22:41:39.574Z",
+   "mtime": "2022-10-06T22:35:08.690Z",
    "size": 3,
    "hash": "64daa44ad493ff28a96effab6e77f1732a3d97d83241581b37dbd70a7a4900fe"
   },
@@ -73,6 +78,10 @@
    "mtime": "2022-10-04T22:41:53.012Z",
    "size": 4,
    "hash": "0eea63e75f484aa4a623c184c4e00f8884b62b1e71636f1318150d77aa64dd25"
+  },
+  "checksums.json": {
+   "mtime": "2022-10-07T22:14:21.996Z",
+   "size": 2607
   }
  }
 }
