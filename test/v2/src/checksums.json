@@ -9,16 +9,6 @@
   }
  },
  "data": {
-  "dbye/bye/not-yet.txt": {
-   "mtime": "2022-10-06T21:55:28.012Z",
-   "size": 2357,
-   "hash": "2f62bc0aab67eac3375c2590c0d17695792576d67ac66f809d9b86a33a40d273"
-  },
-  ".checksums.json": {
-   "mtime": "2022-10-06T21:55:28.012Z",
-   "size": 2357,
-   "hash": "2f62bc0aab67eac3375c2590c0d17695792576d67ac66f809d9b86a33a40d273"
-  },
   "SMARTSUM": {
    "mtime": "2022-10-04T23:15:09.784Z",
    "size": 295,
@@ -80,8 +70,8 @@
    "hash": "0eea63e75f484aa4a623c184c4e00f8884b62b1e71636f1318150d77aa64dd25"
   },
   "checksums.json": {
-   "mtime": "2022-10-07T22:14:21.996Z",
-   "size": 2607
+   "mtime": "2022-10-08T15:29:04.093Z",
+   "size": 2276
   }
  }
 }

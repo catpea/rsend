@@ -121,4 +121,6 @@ rsend follows the "do one thing do it well" philosophy.
 
 ### TODO
 
-- remove directories emptied by .remove
+- file scanner nneds to mark all files indexed in current session,
+so that files and directories that were locally removed are no longer present in the checksums file,
+right now merge is performed, and thus old files are kept.

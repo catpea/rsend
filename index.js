@@ -31,7 +31,7 @@ console.x = function(x){
 //localDirectory, remoteDirectory, remoteSum,
 async function rsend(options, {debug=false}={}){
 
-  if (debug) bug.enable('rsend');
+  // if (debug) bug.enable('rsend');
 
   const kinds = { sftp, lftp };
   const { silent, fingerprint, separator, guarantee, src, dest, header, create, update, remove } = merge({}, kinds[options.kind](), options, );
